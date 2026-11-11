@@ -1,11 +1,28 @@
 <style>
-/* [Retell] Scrolled bar (desktop): the bar drops 8px and the frosted sheet becomes a pill that runs
-   16px past the content on every side, so the logo and buttons stay aligned with the page content */
+/* [Retell] Header to sticky pill (desktop), as in retell-landing-sticky. Nothing resizes and nothing pops in:
+   the frosted sheet is always there. At the top of the page it spans the full width, square, in the
+   header strip (white on the white page, so it reads as the flat header); once scrolled it slides and
+   narrows into the pill with transforms only while its corners round off, and the shadow fades in.
+   The bar's contents drop 8px so they sit centred in the pill, aligned with the page content. */
 @media (min-width: 992px) {
-  #rh26-native-nav .navbar_container-new { transition: translate .35s var(--nav-ease-io-new); }
+  #rh26-native-nav { --rh26-nav-ease: cubic-bezier(.2, .7, .2, 1); }
+  #rh26-native-nav .navbar_container-new { transition: translate .6s var(--rh26-nav-ease); }
   #rh26-native-nav.is-scrolled .navbar_container-new { translate: 0 8px; }
-  #rh26-native-nav .navbar_menu-bg-new { transition: background-color .3s ease, box-shadow .3s ease, border-radius .35s var(--nav-ease-io-new), left .35s var(--nav-ease-io-new), top .35s var(--nav-ease-io-new), width .35s var(--nav-ease-io-new), height .35s var(--nav-ease-io-new); }
-  #rh26-native-nav.is-scrolled .navbar_menu-bg-new:not(.is-open) { border-radius: 36px; background-color: color-mix(in srgb, var(--_base-colors---white) 90%, transparent); -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); box-shadow: 0 4px 6px 0 rgba(0, 0, 0, .09); }
+  #rh26-native-nav .navbar_menu-bg-new {
+    border-radius: 0;
+    background-color: color-mix(in srgb, var(--_base-colors---white) 90%, transparent);
+    -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px);
+    box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0);
+    transform: translateY(-8px) scaleX(var(--rh26-sheet-scale, 1));
+    will-change: transform;
+    transition: transform .6s var(--rh26-nav-ease), border-radius .6s var(--rh26-nav-ease), top .6s var(--rh26-nav-ease), box-shadow .6s var(--rh26-nav-ease), background-color .3s ease, left .35s var(--nav-ease-io-new), width .35s var(--nav-ease-io-new), height .35s var(--nav-ease-io-new);
+  }
+  #rh26-native-nav.is-scrolled .navbar_menu-bg-new { transform: none; border-radius: 36px; box-shadow: 0 4px 6px 0 rgba(0, 0, 0, .09); }
+  /* An open dropdown always uses the rounded sheet, white, with the deep shadow */
+  #rh26-native-nav .navbar_menu-bg-new.is-open,
+  #rh26-native-nav.is-scrolled .navbar_menu-bg-new.is-open { transform: none; border-radius: 20px; background-color: var(--_base-colors---white); box-shadow: 0 10px 80px 0 rgba(0, 0, 0, .2); }
+  #rh26-native-nav .button-nav-new.rh26-action-contact { transition: opacity .15s, transform .15s, background-color .15s, border-color .5s ease; }
+  #rh26-native-nav.is-scrolled .button-nav-new.rh26-action-contact { border-color: var(--_base-colors---border-medium); }
 }
 @media (prefers-reduced-motion: reduce) {
   #rh26-native-nav .navbar_container-new { transition: none; }
@@ -28,6 +45,7 @@
     var PANEL_FADE_MS = 150; /* matches the panel fade-out in the CSS embed */
     var SHEET_INSET = 8;  /* px between the top of the viewport and the frosted bar */
     var SCROLL_SHIFT = 8; /* px the bar drops once the page is scrolled (desktop), matching the CSS above */
+    var SHEET_PAD = 16;   /* px the desktop sheet runs past the content */
     var SCROLL_AT = 8;    /* px of scroll before the bar switches to its scrolled look */
     var PANEL_PAD = 8;    /* px of tolerance around the open panel before the pointer counts as "outside" */
     var TOGGLE_PAD = 4;   /* same, around the toggle */
@@ -48,12 +66,24 @@
        8px from the top). With a panel open it only grows down to the panel's bottom and turns white. */
     function sizeBg(panel) {
       var box = container.getBoundingClientRect();
-      var shift = mqDesktop.matches && nav.classList.contains('is-scrolled') ? SCROLL_SHIFT : 0;
-      var pad = nav.getBoundingClientRect().top + parseFloat(getComputedStyle(nav).paddingTop) + shift - SHEET_INSET;
-      bg.style.left = -pad + 'px';
-      bg.style.top = -pad + 'px';
-      bg.style.width = (box.width + pad * 2) + 'px';
-      bg.style.height = (panel ? panel.offsetTop + panel.offsetHeight + pad : box.height + pad * 2) + 'px';
+      var top = nav.getBoundingClientRect().top + parseFloat(getComputedStyle(nav).paddingTop);
+      var padX, padTop, padBottom;
+      if (mqDesktop.matches) {
+        /* Desktop: the sheet always has the pill's shape, 16px past the content all round, and sits
+           8px from the top of the viewport (the bar drops 8px when scrolled, so its offset grows from
+           8 to 16 in step). At the top of the page the CSS stretches it into the full-width strip. */
+        var shift = nav.classList.contains('is-scrolled') ? SCROLL_SHIFT : 0;
+        padX = SHEET_PAD;
+        padTop = top + shift - SHEET_INSET;
+        padBottom = SHEET_PAD * 2 - padTop; /* the pill keeps one height (content + 16px above and below) */
+        bg.style.setProperty('--rh26-sheet-scale', (document.documentElement.clientWidth / (box.width + padX * 2)).toFixed(4));
+      } else {
+        padX = padTop = padBottom = top - SHEET_INSET;
+      }
+      bg.style.left = -padX + 'px';
+      bg.style.top = -padTop + 'px';
+      bg.style.width = (box.width + padX * 2) + 'px';
+      bg.style.height = (panel ? panel.offsetTop + panel.offsetHeight + padTop : box.height + padTop + padBottom) + 'px';
       watchClip(SHEET_MS + 100);
     }
     /* Panel text never shows outside the sheet: while the sheet grows or shrinks, every panel is clipped
