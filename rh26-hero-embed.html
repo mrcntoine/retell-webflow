@@ -1,0 +1,530 @@
+<style>
+[data-rh26-hero] .rh26-hero-video{opacity:0;transition:opacity 1.2s cubic-bezier(.4,0,.2,1)}
+[data-rh26-hero] .rh26-hero-video.is-active{opacity:1}
+[data-rh26-hero] .rh26-demo-avatar{opacity:.5;transition:opacity .4s ease}
+[data-rh26-hero] .rh26-demo-avatar.is-active,[data-rh26-hero] .rh26-demo-avatar:hover{opacity:1}
+[data-rh26-hero] .rh26-demo-avatar:focus-visible{outline:2px solid var(--_base-colors---white);outline-offset:4px;border-radius:50%}
+[data-rh26-hero] .rh26-hero-ring{position:absolute;left:-4px;top:-4px;width:48px;height:48px;rotate:-90deg;overflow:visible;pointer-events:none}
+[data-rh26-hero] .rh26-hero-ring circle{fill:none;stroke:var(--_base-colors---white);stroke-width:2;stroke-linecap:round}
+[data-rh26-hero] .rh26-chat-bubble,[data-rh26-hero] .rh26-chat-reply{transition:opacity .45s cubic-bezier(.22,1,.36,1),translate .6s cubic-bezier(.22,1,.36,1)}
+[data-rh26-hero] .rh26-chat-bubble.rh26-out,[data-rh26-hero] .rh26-chat-reply.rh26-out{opacity:0;translate:0 8px}
+[data-rh26-hero] .rh26-chat-bubble.is-light{background-color:rgba(255,255,255,.17)}
+[data-rh26-hero] .rh26-chat-bubble>span{white-space:pre-line}
+[data-rh26-hero] .rh26-chat-reply .rh26-chat-line,[data-rh26-hero] .rh26-chat-reply .rh26-chat-muted{white-space:nowrap}
+[data-rh26-hero] .rh26-chat-stack{position:absolute;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:12px;pointer-events:none}
+[data-rh26-hero] .rh26-chat-stack>.rh26-chat-bubble,[data-rh26-hero] .rh26-chat-stack>.rh26-chat-reply{position:relative;inset:auto;max-width:100%}
+[data-rh26-hero] .rh26-chat-stack>.rh26-chat-bubble{align-self:flex-end}
+[data-rh26-hero] .rh26-chat-stack.is-free{display:contents}
+[data-rh26-hero] .rh26-chat-stack.is-free>.rh26-chat-bubble,[data-rh26-hero] .rh26-chat-stack.is-free>.rh26-chat-reply{position:absolute;z-index:1;max-width:none;pointer-events:none}
+[data-rh26-hero].rh26-calling .rh26-chat-stack{opacity:0}
+[data-rh26-hero] .rh26-demo-avatars,[data-rh26-hero] .rh26-demo-bar,[data-rh26-hero] .rh26-hero-shade{transition:opacity .4s ease}
+[data-rh26-hero].rh26-calling .rh26-demo-avatars,[data-rh26-hero].rh26-calling .rh26-demo-bar,[data-rh26-hero].rh26-calling .rh26-chat-bubble,[data-rh26-hero].rh26-calling .rh26-chat-reply{opacity:0;pointer-events:none}
+[data-rh26-hero] .rh26-call-button{cursor:pointer}
+[data-rh26-hero] .rh26-call-panel{transition:opacity .5s ease,visibility 0s linear .5s}
+[data-rh26-hero] .rh26-call-panel.is-open{opacity:1;visibility:visible;transition:opacity .5s ease,visibility 0s}
+[data-rh26-hero] .rh26-call-panel .rh26-call-form>*,[data-rh26-hero] .rh26-call-panel .rh26-panel-close,[data-rh26-hero] .rh26-call-panel .rh26-panel-legal{opacity:0;translate:0 10px;transition:opacity .5s ease,translate .7s cubic-bezier(.22,1,.36,1)}
+[data-rh26-hero] .rh26-call-panel.is-open .rh26-call-form>*,[data-rh26-hero] .rh26-call-panel.is-open .rh26-panel-close,[data-rh26-hero] .rh26-call-panel.is-open .rh26-panel-legal{opacity:1;translate:none;transition-delay:var(--rh26-d,0s)}
+[data-rh26-hero] .rh26-panel-field:focus-within{background-color:rgba(0,0,0,.25)}
+[data-rh26-hero] .rh26-panel-field.is-invalid{box-shadow:inset 0 0 0 1px rgba(255,255,255,.6)}
+[data-rh26-hero] .rh26-panel-input:-webkit-autofill,[data-rh26-hero] .rh26-panel-input:-webkit-autofill:hover,[data-rh26-hero] .rh26-panel-input:-webkit-autofill:focus,[data-rh26-hero] .rh26-panel-input:-webkit-autofill:active{-webkit-text-fill-color:#fff;caret-color:#fff;-webkit-box-shadow:0 0 0 1000px transparent inset;box-shadow:0 0 0 1000px transparent inset;background-color:transparent!important;background-clip:text;transition:background-color 99999s ease-in-out 0s,color 99999s ease-in-out 0s;font:inherit}
+[data-rh26-hero] .rh26-panel-input:autofill{-webkit-text-fill-color:#fff;background-color:transparent!important;font:inherit}
+[data-rh26-hero] .rh26-panel-input:-webkit-autofill::first-line{font-family:inherit;font-size:14px;color:#fff}
+[data-rh26-hero] .rh26-demo-title,[data-rh26-hero] .rh26-demo-desc{transition:opacity .35s ease,translate .5s cubic-bezier(.22,1,.36,1)}
+[data-rh26-hero] .rh26-demo-title.rh26-swap,[data-rh26-hero] .rh26-demo-desc.rh26-swap{opacity:0;translate:0 4px}
+[data-rh26-hero] .rh26-chat-reply .rh26-chat-muted{opacity:1}
+[data-rh26-hero] .rh26-word{opacity:.5;transition:opacity .25s ease}
+[data-rh26-hero] .rh26-word.is-said{opacity:1}
+[data-rh26-hero] .rh26-panel-submit[disabled]{opacity:.6;cursor:default;pointer-events:none}
+
+/* Sticky call: follows the hero slideshow once the hero is scrolled away */
+.rh26-sticky{position:fixed;right:20px;bottom:20px;z-index:900;width:88px;height:88px;opacity:0;visibility:hidden;translate:0 16px;transition:opacity .4s ease,translate .6s cubic-bezier(.22,1,.36,1),visibility 0s linear .6s}
+.rh26-sticky.is-shown{opacity:1;visibility:visible;translate:none;transition:opacity .4s ease,translate .6s cubic-bezier(.22,1,.36,1),visibility 0s}
+.rh26-sticky-ring{position:absolute;right:-8px;bottom:-8px;width:104px;height:104px;rotate:-90deg;overflow:visible;pointer-events:none;transition:opacity .3s ease}
+.rh26-sticky-ring circle{fill:none;stroke-width:1.5}
+.rh26-sticky-ring .rh26-sticky-track{stroke:rgba(0,0,0,.08)}
+.rh26-sticky-ring .rh26-sticky-arc{stroke:#000;stroke-linecap:round}
+.rh26-sticky-pill{position:absolute;right:0;bottom:0;box-sizing:border-box;width:88px;height:88px;margin:0;padding:0;border:2px solid #fff;border-radius:88px;overflow:hidden;background:#3a3a3a;color:#fff;font:inherit;text-align:left;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12),0 34px 40px rgba(0,0,0,.1);transition:width .6s cubic-bezier(.22,1,.36,1);-webkit-tap-highlight-color:transparent}
+.rh26-sticky-pill:focus-visible{outline:2px solid #000;outline-offset:4px}
+.rh26-sticky-face{position:absolute;right:0;top:0;width:84px;height:84px;border-radius:50%;object-fit:cover;transition:opacity .35s ease}
+.rh26-sticky-badge{position:absolute;right:26px;top:48px;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#fff;transition:opacity .35s ease}
+.rh26-sticky-badge svg,.rh26-sticky-cta svg{width:16px;height:16px;fill:#000;flex:none}
+.rh26-sticky-bg{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(52px);opacity:0;transition:opacity .45s ease}
+.rh26-sticky-bg::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.18)}
+.rh26-sticky-body{position:absolute;left:0;top:0;width:438px;height:84px;opacity:0;transition:opacity .25s ease}
+.rh26-sticky-orb{position:absolute;left:14px;top:16px;width:52px;height:52px;border-radius:50%;background:#fff}
+.rh26-sticky-orb img{position:absolute;left:6px;top:6px;width:40px;height:40px;border-radius:50%;object-fit:cover}
+.rh26-sticky-title{position:absolute;left:78px;top:15px;width:213px;font-size:14px;line-height:19px;font-weight:500;letter-spacing:-.14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh26-sticky-desc{position:absolute;left:78px;top:38px;width:213px;font-size:14px;line-height:16px;letter-spacing:-.14px;opacity:.6}
+.rh26-sticky-cta{position:absolute;left:307px;top:22px;display:flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:48px;background:#fff;color:#000;font-size:14px;letter-spacing:-.14px;white-space:nowrap}
+.rh26-sticky.is-open .rh26-sticky-pill{width:442px}
+.rh26-sticky.is-open .rh26-sticky-ring,.rh26-sticky.is-open .rh26-sticky-face,.rh26-sticky.is-open .rh26-sticky-badge{opacity:0}
+.rh26-sticky.is-open .rh26-sticky-bg{opacity:1}
+.rh26-sticky.is-open .rh26-sticky-body{opacity:1;transition:opacity .35s ease .2s}
+@media (max-width:767px){.rh26-sticky{right:16px;bottom:16px}}
+@media (prefers-reduced-motion: reduce){[data-rh26-hero] *,.rh26-sticky,.rh26-sticky *{transition-duration:.01s!important;transition-delay:0s!important}}
+</style>
+<script>
+(function () {
+  var root = document.querySelector('[data-rh26-component="Hero"]');
+  if (!root || root.hasAttribute('data-rh26-hero')) return;
+  var videos = Array.prototype.slice.call(root.querySelectorAll('.rh26-hero-video'));
+  var avatars = Array.prototype.slice.call(root.querySelectorAll('.rh26-demo-avatar'));
+  if (!videos.length) return;
+  root.setAttribute('data-rh26-hero', '');
+
+  var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var FALLBACK_MS = 7000, slideMs = FALLBACK_MS;
+  var WORD_MS = 90, CALLER_MS = 25, MIN_CALLER_MS = 1400, END_MS = 2500;
+  var bubble = root.querySelector('.rh26-chat-bubble');
+  var reply = root.querySelector('.rh26-chat-reply');
+  // The conversation: the caller speaks (right), then the agent answers (left, lower).
+  // On desktop each bubble sits at its own spot for the scene; on phones both stack in one slot.
+  var stack = null;
+  if (bubble && reply) {
+    stack = document.createElement('div');
+    stack.className = 'rh26-chat-stack';
+    reply.parentNode.insertBefore(stack, reply);
+    stack.appendChild(bubble);
+    stack.appendChild(reply);
+  }
+  var orbs = root.querySelectorAll('.rh26-chat-orb, .rh26-demo-orb-img, [data-rh26-orb-target]');
+  var panel = root.querySelector('[data-rh26-call-panel]');
+  var callBtn = root.querySelector('.rh26-call-button');
+  var current = -1, startedAt = 0, timer = null, seen = false, calling = false, swapTimers = [];
+  var openPanel = null;
+
+  // One demo agent per hero slide, in avatar order. Each line keeps the line break from the design.
+  var AGENTS = [
+    { id: 'agent_2e210fc04bd54dc074d5101a2c', name: 'Kate', title: 'Customer service', desc: 'Kate, schedule your home internet installation.', task: 'Schedule your home internet installation.',
+      caller: ['Perfect, so the technician', 'comes Tuesday morning?'], agent: ["Yes, between 8 and 10. We'll", 'text you before they arrive.'] },
+    { id: 'agent_70959ccfc67948850bd78dc6fb', name: 'Selina', title: 'Appointment scheduling', desc: 'Selina, find a time for a clinic appointment.', task: 'Find a time for a clinic appointment.',
+      caller: ['Great, Thursday at ten works.'], agent: ["Perfect, you're all set for", 'Thursday at ten.'] },
+    { id: 'agent_698d4f58c6f2a5c0eb79daf3b8', name: 'Anna', title: 'Home insurance sales qualification', desc: 'Anna, explore home insurance coverage.', task: 'Explore home insurance coverage.',
+      caller: ["It's a three-bedroom house,", 'built in 1998.'], agent: ['Thanks. Any updates to the', 'roof or wiring since then?'] },
+    { id: 'agent_f7a445dd3a69865e48d05e13b2', name: 'Linda', title: 'Collections & payment reminders', desc: 'Linda, take a payment reminder call.', task: 'Take a payment reminder call.',
+      caller: ["Okay. I'll make the", 'payment on Friday.'], agent: ["Thank you. I'll note the", 'payment for Friday.'] },
+    { id: 'agent_bda22216f50f4e359695f164ba', name: 'Sofia', title: 'Ordering & reservations', desc: 'Sofia, book or cancel a restaurant reservation.', task: 'Book or cancel a restaurant reservation.',
+      caller: ['A table for two at eight?', 'Perfect, thank you.'], agent: ["You're all set. See you", 'tonight at eight.'] },
+    { id: 'agent_aa71e5e00c2239c688d5d75b9c', name: 'Maya', title: 'Screening & intake', desc: 'Maya, walk through a new-patient intake.', task: 'Walk through a new-patient intake.',
+      caller: ["It's my shoulder.", 'About three weeks now.'], agent: ['Thanks. How would you rate', 'the pain from 1 to 10?'] }
+  ];
+  var RETELL_PUBLIC_KEY = 'public_key_3c26b41b43650555ef7f8';
+  var FROM_NUMBER = '+13375482975';
+
+  // Semantic demo events use the same selected agent as the actual call request.
+  // Analytics failures must never prevent the demo from opening or placing a call.
+  function trackDemo(eventName, agent, properties) {
+    try {
+      if (!window.mixpanel || typeof window.mixpanel.track !== 'function') return;
+      window.mixpanel.track(eventName, Object.assign({
+        use_case: agent.title,
+        demo_name: agent.name,
+        demo_index: AGENTS.indexOf(agent) + 1,
+        agent_id: agent.id,
+        location: 'hero_demo',
+        page_name: 'new_home',
+        url: window.location.pathname,
+        tracking_version: 'rh26_demo_v1',
+        is_test: window.location.hostname === 'retell-staging.webflow.io' ||
+          window.location.hostname.endsWith('.design.webflow.com') ||
+          window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      }, properties || {}));
+    } catch (_) {}
+  }
+
+  function requestDemoCall(agentId, toNumber, email) {
+    return fetch('https://api.retellai.com/v2/create-phone-call', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + RETELL_PUBLIC_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from_number: FROM_NUMBER,
+        to_number: toNumber,
+        override_agent_id: agentId,
+        override_agent_version: 'latest_published',
+        metadata: { widget_type: 'callback', email: email }
+      })
+    }).then(function (response) {
+      return response.json().catch(function () { return {}; }).then(function (result) {
+        if (!response.ok) throw new Error(result.message || 'Call failed: ' + response.status);
+        return result;
+      });
+    });
+  }
+
+  // Progress ring that moves to the active avatar
+  var NS = 'http://www.w3.org/2000/svg', R = 23, LEN = 2 * Math.PI * R;
+  var ring = document.createElementNS(NS, 'svg');
+  ring.setAttribute('class', 'rh26-hero-ring'); ring.setAttribute('viewBox', '0 0 48 48'); ring.setAttribute('aria-hidden', 'true');
+  ring.innerHTML = '<circle cx="24" cy="24" r="' + R + '" stroke-dasharray="' + LEN + '" stroke-dashoffset="' + LEN + '"/>';
+  var arc = ring.firstChild;
+
+  /* ---------- Sticky call ---------- */
+  var PHONE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>';
+  var SR = 51, SLEN = 2 * Math.PI * SR;
+  var sticky = document.createElement('div');
+  sticky.className = 'rh26-sticky';
+  sticky.innerHTML =
+    '<svg class="rh26-sticky-ring" viewBox="0 0 104 104" aria-hidden="true"><circle class="rh26-sticky-track" cx="52" cy="52" r="' + SR + '"/>' +
+    '<circle class="rh26-sticky-arc" cx="52" cy="52" r="' + SR + '" stroke-dasharray="' + SLEN + '" stroke-dashoffset="' + SLEN + '"/></svg>' +
+    '<button type="button" class="rh26-sticky-pill" aria-haspopup="dialog">' +
+      '<span class="rh26-sticky-bg"></span>' +
+      '<img class="rh26-sticky-face" alt="" decoding="async">' +
+      '<span class="rh26-sticky-badge">' + PHONE + '</span>' +
+      '<span class="rh26-sticky-body" aria-hidden="true">' +
+        '<span class="rh26-sticky-orb"><img alt="" decoding="async"></span>' +
+        '<span class="rh26-sticky-title"></span>' +
+        '<span class="rh26-sticky-desc"></span>' +
+        '<span class="rh26-sticky-cta">' + PHONE + 'Get a call</span>' +
+      '</span>' +
+    '</button>';
+  document.body.appendChild(sticky);
+  var sPill = sticky.querySelector('.rh26-sticky-pill');
+  var sArc = sticky.querySelector('.rh26-sticky-arc');
+  var sFace = sticky.querySelector('.rh26-sticky-face');
+  var sBg = sticky.querySelector('.rh26-sticky-bg');
+  var sOrb = sticky.querySelector('.rh26-sticky-orb img');
+  var sTitle = sticky.querySelector('.rh26-sticky-title');
+  var sDesc = sticky.querySelector('.rh26-sticky-desc');
+  var heroInView = true;
+
+  function updateSticky() {
+    var agent = AGENTS[current], v = videos[current];
+    if (!agent || !v) return;
+    var thumb = v.getAttribute('data-rh26-thumb') || v.getAttribute('poster') || '';
+    if (thumb) { sFace.src = thumb; sBg.style.backgroundImage = 'url("' + thumb + '")'; }
+    var orb = v.getAttribute('data-rh26-orb');
+    if (orb) sOrb.src = orb;
+    sTitle.textContent = agent.title;
+    sDesc.textContent = agent.desc;
+    sPill.setAttribute('aria-label', 'Get a call from ' + agent.name + ': ' + agent.title);
+  }
+  function showSticky() { sticky.classList.toggle('is-shown', !heroInView && !calling); }
+  var canHover = matchMedia('(hover: hover) and (pointer: fine)');
+  sticky.addEventListener('mouseenter', function () { if (canHover.matches) sticky.classList.add('is-open'); });
+  sticky.addEventListener('mouseleave', function () { sticky.classList.remove('is-open'); });
+  sPill.addEventListener('focus', function () { if (sPill.matches(':focus-visible')) sticky.classList.add('is-open'); });
+  sPill.addEventListener('blur', function () { sticky.classList.remove('is-open'); });
+  // Click: back to the top of the page, then the hero's call panel opens for the current agent
+  sPill.addEventListener('click', function () {
+    sticky.classList.remove('is-open');
+    trackDemo('Website Demo Sticky Clicked', AGENTS[current]);
+    var done = false, start = performance.now();
+    var finish = function () { if (done) return; done = true; if (openPanel) openPanel(); };
+    if (window.scrollY < 4 || reduceMotion) { window.scrollTo(0, 0); return finish(); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    (function wait() {
+      if (window.scrollY < 4 || performance.now() - start > 1800) return finish();
+      requestAnimationFrame(wait);
+    })();
+  });
+  new IntersectionObserver(function (entries) {
+    heroInView = entries[0].isIntersecting;
+    if (!heroInView) sticky.classList.remove('is-open');
+    showSticky();
+  }, { threshold: 0 }).observe(root);
+
+  videos.forEach(function (v) {
+    v.muted = true; v.playsInline = true; v.loop = false;
+    v.addEventListener('ended', function () { if (v === videos[current]) restart(v); });
+    v.addEventListener('error', function () { if (v === videos[current]) useTimer(); }, true);
+  });
+  var hasSrc = function (v) { return !!(v.currentSrc || v.getAttribute('src') || v.querySelector('source')); };
+  var restart = function (v) { v.currentTime = 0; v.play().catch(function () {}); };
+  var pair = function (v, key) { return (v.getAttribute(key) || '').split(',').map(Number); };
+
+  // The slideshow keeps running while the hero is scrolled away, so the sticky call follows it
+  function useTimer() {
+    clearTimeout(timer);
+    startedAt = performance.now();
+    if (!reduceMotion && !calling && !document.hidden) timer = setTimeout(next, slideMs);
+  }
+
+  // Desktop: the caller bubble sits at (right%, top%), the agent reply at (left%, top%), per video,
+  // so neither covers the face. On phones both stack in the fixed slot set by the page CSS.
+  var compact = matchMedia('(max-width: 767px)');
+  function place(el, x, y, side) {
+    el.style.left = side === 'left' ? x : 'auto';
+    el.style.right = side === 'right' ? x : 'auto';
+    el.style.top = y; el.style.bottom = 'auto';
+  }
+  function unplace(el) { el.style.left = el.style.right = el.style.top = el.style.bottom = ''; }
+  function setOverlay(v) {
+    var b = pair(v, 'data-rh26-bubble'), r = pair(v, 'data-rh26-reply');
+    if (bubble) bubble.classList.toggle('is-light', v.getAttribute('data-rh26-tone') === 'light');
+    if (!stack) return;
+    if (compact.matches || b.length !== 2 || r.length !== 2 || isNaN(b[0] + b[1] + r[0] + r[1])) {
+      stack.classList.remove('is-free'); unplace(bubble); unplace(reply); return;
+    }
+    stack.classList.add('is-free');
+    place(bubble, b[0] + '%', b[1] + '%', 'right');
+    place(reply, r[0] + '%', r[1] + '%', 'left');
+  }
+  compact.addEventListener('change', function () { if (videos[current]) setOverlay(videos[current]); });
+
+  // Orb change: the next orb melts in on top of the current one, then takes its place
+  var EASE = 'cubic-bezier(.22, 1, .36, 1)';
+  function clearOrb(img) {
+    if (img._rh26Fade) { img._rh26Fade.cancel(); img._rh26Fade = null; }
+    if (img._rh26Ghost) { img._rh26Ghost.remove(); img._rh26Ghost = null; }
+  }
+  function swapOrb(img, url, instant) {
+    if ((img._rh26Target || img.getAttribute('src')) === url) return;
+    var token = img._rh26Orb = (img._rh26Orb || 0) + 1;
+    img._rh26Target = url;
+    var commit = function () { img.removeAttribute('srcset'); img.src = url; };
+    if (instant || reduceMotion || !img.animate || !img.offsetWidth) { clearOrb(img); return commit(); }
+    var pre = new Image(); pre.src = url;
+    (pre.decode ? pre.decode() : Promise.resolve()).catch(function () {}).then(function () {
+      if (token !== img._rh26Orb) return;
+      clearOrb(img);
+      var box = img.parentElement;
+      if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
+      var ghost = document.createElement('img');
+      ghost.className = img.className; ghost.alt = ''; ghost.setAttribute('aria-hidden', 'true'); ghost.src = url;
+      ghost.style.cssText = 'position:absolute;margin:0;pointer-events:none;left:' + img.offsetLeft + 'px;top:' + img.offsetTop + 'px;width:' + img.offsetWidth + 'px;height:' + img.offsetHeight + 'px';
+      img.after(ghost);
+      var opts = { duration: 900, easing: EASE, fill: 'forwards' };
+      ghost.animate([{ opacity: 0, transform: 'scale(.82) rotate(-24deg)', filter: 'blur(3px)' }, { opacity: 1, transform: 'none', filter: 'blur(0px)' }], opts);
+      var fade = img.animate([{ opacity: 1, transform: 'none', filter: 'blur(0px)' }, { opacity: 0, transform: 'scale(1.12) rotate(18deg)', filter: 'blur(3px)' }], opts);
+      img._rh26Ghost = ghost; img._rh26Fade = fade;
+      fade.finished.then(function () {
+        if (token !== img._rh26Orb) return;
+        commit();
+        var done = function () { if (token === img._rh26Orb) clearOrb(img); };
+        img.decode ? img.decode().then(done, done) : done();
+      }).catch(function () {});
+    });
+  }
+
+  // The agent reply fills in word by word, as if spoken, across its two lines
+  var bubbleText = bubble && (bubble.querySelector('span') || bubble);
+  var replyLines = reply ? [reply.querySelector('.rh26-chat-line'), reply.querySelector('.rh26-chat-muted')] : [];
+  var later = function (ms, fn) { swapTimers.push(setTimeout(fn, reduceMotion ? 0 : ms)); };
+  function say(lines, delay) {
+    if (!replyLines[0] || !replyLines[1]) return;
+    var spans = [];
+    replyLines.forEach(function (line, k) {
+      line.textContent = '';
+      (lines[k] || '').split(' ').filter(Boolean).forEach(function (word, j) {
+        if (j) line.appendChild(document.createTextNode(' '));
+        var sp = document.createElement('span');
+        sp.className = 'rh26-word';
+        sp.textContent = word;
+        line.appendChild(sp);
+        spans.push(sp);
+      });
+    });
+    spans.forEach(function (sp, k) { later(delay + 200 + k * WORD_MS, function () { sp.classList.add('is-said'); }); });
+    return spans.length;
+  }
+
+  function go(i, instant) {
+    i = (i + videos.length) % videos.length;
+    if (i === current) return;
+    var prev = videos[current], v = videos[i];
+    current = i;
+    swapTimers.forEach(clearTimeout); swapTimers = [];
+    videos.forEach(function (el) { el.classList.toggle('is-active', el === v); });
+    avatars.forEach(function (a, k) { a.classList.toggle('is-active', k === i); a.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
+    if (avatars[i]) avatars[i].appendChild(ring);
+    arc.style.strokeDashoffset = LEN;
+    sArc.style.strokeDashoffset = SLEN;
+    var orb = v.getAttribute('data-rh26-orb');
+    if (orb) Array.prototype.forEach.call(orbs, function (img) { swapOrb(img, orb, instant); });
+    applyAgent();
+    swapBar(instant);
+    updateSticky();
+
+    // The conversation: the caller speaks, then the agent answers
+    [bubble, reply].forEach(function (el) { if (el) el.classList.add('rh26-out'); });
+    var agent = AGENTS[i] || {};
+    if (agent.caller && agent.agent) {
+      var callerText = agent.caller.join(' ');
+      var t1 = 800;                                                          // caller bubble
+      var t2 = t1 + Math.max(MIN_CALLER_MS, callerText.length * CALLER_MS);  // agent answers below
+      var words = agent.agent.join(' ').split(' ').length;
+      slideMs = t2 + 200 + (words - 1) * WORD_MS + 250 + END_MS;
+      later(450, function () {
+        setOverlay(v);
+        if (bubbleText) bubbleText.textContent = agent.caller.join('\n');
+        say(agent.agent, t2 - 450);
+      });
+      later(t1, function () { bubble && bubble.classList.remove('rh26-out'); });
+      later(t2, function () { reply && reply.classList.remove('rh26-out'); });
+    } else {
+      slideMs = FALLBACK_MS;
+      later(450, function () { setOverlay(v); bubble && bubble.classList.remove('rh26-out'); reply && reply.classList.remove('rh26-out'); });
+    }
+
+    // Warm up the next video, park the old one once it has faded out
+    var after = videos[(i + 1) % videos.length];
+    if (after.preload === 'none') after.preload = 'auto';
+    if (prev) setTimeout(function () { if (prev !== videos[current]) { prev.pause(); prev.currentTime = 0; } }, 1300);
+    play();
+  }
+  var next = function () { go(current + 1); };
+
+  var panelTitle = root.querySelector('.rh26-panel-title');
+  var panelCopy = root.querySelector('.rh26-panel-copy');
+  var demoTitle = root.querySelector('.rh26-demo-title');
+  var demoDesc = root.querySelector('.rh26-demo-desc');
+  var submitBtn = root.querySelector('[data-rh26-call-form] [type="submit"]');
+  var submitLabel = submitBtn && submitBtn.querySelector('span');
+  var defaultLabel = submitLabel ? submitLabel.textContent : 'Get a call';
+  var busy = false, barTimer = null;
+  function applyAgent(label, copy) {
+    var agent = AGENTS[current];
+    if (!agent) return;
+    if (panelTitle) panelTitle.textContent = 'Get a call from ' + agent.name;
+    if (panelCopy) panelCopy.textContent = copy || agent.task;
+    if (submitLabel) submitLabel.textContent = label || defaultLabel;
+    var callLabel = callBtn && callBtn.querySelector('span');
+    if (callLabel) callLabel.textContent = 'Get a call from ' + agent.name;
+    // Phones show the call button as an icon only, so it keeps its name for screen readers
+    if (callBtn) callBtn.setAttribute('aria-label', 'Get a call from ' + agent.name);
+  }
+  // Card under the video: the old text fades out, the new agent fades in
+  function swapBar(instant) {
+    var agent = AGENTS[current];
+    if (!agent) return;
+    var write = function () {
+      if (demoTitle) demoTitle.textContent = agent.title;
+      if (demoDesc) demoDesc.textContent = agent.desc;
+      [demoTitle, demoDesc].forEach(function (el) { if (el) el.classList.remove('rh26-swap'); });
+    };
+    clearTimeout(barTimer);
+    if (instant || reduceMotion) return write();
+    [demoTitle, demoDesc].forEach(function (el) { if (el) el.classList.add('rh26-swap'); });
+    barTimer = setTimeout(write, 350);
+  }
+
+  function playVideo() {
+    var v = videos[current];
+    if (v && seen && !reduceMotion && !document.hidden && hasSrc(v)) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+  }
+  function play() {
+    clearTimeout(timer);
+    if (reduceMotion) return;
+    playVideo();
+    useTimer();
+  }
+  function pauseVideos() { videos.forEach(function (v) { v.pause(); }); }
+
+  // Both rings fill over the slide's length, which follows its conversation
+  (function tick() {
+    if (videos[current] && !reduceMotion) {
+      var p = startedAt && !calling ? Math.min(1, (performance.now() - startedAt) / slideMs) : 0;
+      arc.style.strokeDashoffset = LEN * (1 - p);
+      sArc.style.strokeDashoffset = SLEN * (1 - p);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  avatars.forEach(function (a, k) {
+    var img = a.querySelector('img');
+    a.setAttribute('role', 'button'); a.setAttribute('tabindex', '0');
+    a.setAttribute('aria-label', 'Play demo: ' + (AGENTS[k] ? AGENTS[k].name + ', ' + AGENTS[k].title : (img && img.alt) || 'voice agent ' + (k + 1)));
+    a.addEventListener('click', function () { go(k); trackDemo('Website Demo Selected', AGENTS[k]); });
+    a.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(k); trackDemo('Website Demo Selected', AGENTS[k]); } });
+  });
+
+  // Video playback follows visibility; the slide timer does not, so the sticky call keeps in step
+  new IntersectionObserver(function (entries) {
+    seen = entries[0].isIntersecting;
+    seen ? playVideo() : pauseVideos();
+  }, { threshold: 0.25 }).observe(root);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { clearTimeout(timer); pauseVideos(); } else play();
+  });
+
+  /* ---------- Get a call panel ---------- */
+  if (panel && callBtn) {
+    var form = panel.querySelector('[data-rh26-call-form]');
+    var closeBtn = panel.querySelector('[data-rh26-call-close]');
+    var staggered = [closeBtn].concat(form ? Array.prototype.slice.call(form.children) : [], [panel.querySelector('.rh26-panel-legal')]);
+    staggered.forEach(function (el, k) { if (el) el.style.setProperty('--rh26-d', (0.12 + k * 0.05) + 's'); });
+    callBtn.setAttribute('role', 'button');
+    callBtn.setAttribute('aria-haspopup', 'dialog');
+    if (!callBtn.hasAttribute('href')) callBtn.setAttribute('tabindex', '0');
+
+    var open = function (e) {
+      if (e) e.preventDefault();
+      if (!calling) trackDemo('Website Demo Opened', AGENTS[current]);
+      calling = true;
+      clearTimeout(timer);
+      showSticky();
+      root.classList.add('rh26-calling');
+      panel.classList.add('is-open');
+      panel.setAttribute('aria-modal', 'true');
+      playVideo();
+      setTimeout(function () { var f = panel.querySelector('input'); if (f) f.focus({ preventScroll: true }); }, 450);
+    };
+    openPanel = open;
+    var close = function () {
+      calling = false;
+      root.classList.remove('rh26-calling');
+      panel.classList.remove('is-open');
+      panel.removeAttribute('aria-modal');
+      if (!busy) applyAgent();
+      callBtn.focus({ preventScroll: true });
+      showSticky();
+      useTimer();
+    };
+    callBtn.addEventListener('click', open);
+    callBtn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') open(e); });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && calling) close(); });
+
+    if (form) form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var ok = true;
+      Array.prototype.forEach.call(form.querySelectorAll('input'), function (input) {
+        var valid = input.value.trim() !== '' && input.checkValidity();
+        input.closest('.rh26-panel-field').classList.toggle('is-invalid', !valid);
+        if (!valid && ok) { input.focus(); ok = false; }
+      });
+      if (!ok || busy) return;
+      var digits = form.elements.phone.value.replace(/\D/g, '');
+      if (digits.length === 11 && digits.charAt(0) === '1') digits = digits.slice(1);
+      if (digits.length !== 10) {
+        form.elements.phone.closest('.rh26-panel-field').classList.add('is-invalid');
+        form.elements.phone.focus();
+        return;
+      }
+      var agent = AGENTS[current];
+      var detail = { phone: '+1' + digits, email: form.elements.email.value.trim(), demo: current + 1, agentId: agent.id, agent: agent.name };
+      var requestProperties = {
+        request_id: 'rh26-' + Date.now() + '-' + Math.random().toString(36).slice(2),
+        phone: detail.phone,
+        email: detail.email
+      };
+      trackDemo('Website Demo Call Requested', agent, requestProperties);
+      root.dispatchEvent(new CustomEvent('rh26:get-a-call', { bubbles: true, detail: detail }));
+      busy = true;
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+      applyAgent('Calling…');
+      // A site-level handler can take over, otherwise the call goes straight to Retell
+      var placeCall = typeof window.rh26GetACall === 'function'
+        ? Promise.resolve(window.rh26GetACall(detail))
+        : requestDemoCall(agent.id, detail.phone, detail.email);
+      placeCall.then(function (call) {
+        console.info('[Retell] Demo call created', call && call.call_id);
+        trackDemo('Website Demo Call Succeeded', agent, Object.assign({}, requestProperties, { call_id: call && call.call_id || null }));
+        applyAgent('Calling you now', agent.name + ' is calling you now. Pick up to start the demo.');
+        form.reset();
+      }).catch(function (err) {
+        console.error('[Retell] Demo call failed', err);
+        trackDemo('Website Demo Call Failed', agent, Object.assign({}, requestProperties, { error_message: String(err && err.message || 'Unknown error').slice(0,300) }));
+        applyAgent('Try again', 'We couldn’t place the call. Check your number and try again.');
+      }).then(function () {
+        busy = false;
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-busy');
+      });
+    });
+  }
+
+  go(0, true);
+})();
+</script>
