@@ -3,7 +3,7 @@
 [data-rh26-component="FAQs"] .rh26-faq-question { cursor: pointer; }
 [data-rh26-component="FAQs"] .rh26-faq-plus { transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
 [data-rh26-component="FAQs"] .rh26-faq-item.is-open .rh26-faq-plus { transform: rotate(45deg); }
-/* Show More: the first 6 questions show; the rest wait behind the button (all show if scripts don't run) */
+/* Show More / Show Less: the first 6 questions show; the rest wait behind the button (all show if scripts don't run) */
 [data-rh26-component="FAQs"] .rh26-faq-list.is-collapsed > .rh26-faq-item:nth-child(n+7) { display: none; }
 [data-rh26-component="FAQs"] .rh26-faq-list.is-collapsed > .rh26-faq-item:nth-child(6) { border-bottom-color: transparent; }
 [data-rh26-component="FAQs"] .rh26-faq-more:not(.is-ready) { display: none; }
@@ -66,8 +66,8 @@
     });
   }
 
-  // Show More: reveals the remaining questions; the list grows open while they fade in one after another,
-  // then the button fades away and focus moves to the first new question
+  // Show More / Show Less: the list grows open while the remaining questions fade in one after another,
+  // and closes back to the first 6 while they fade out. The button stays and swaps its label.
   function setupMore(root) {
     var list = root.querySelector('.rh26-faq-list');
     var wrap = root.querySelector('.rh26-faq-more');
@@ -79,42 +79,58 @@
     list.classList.add('is-collapsed');
     wrap.classList.add('is-ready');
     btn.setAttribute('aria-controls', list.id);
+    btn.setAttribute('aria-expanded', 'false');
     if (btn.tagName !== 'BUTTON') { btn.setAttribute('role', 'button'); btn.setAttribute('tabindex', '0'); }
     var extra = items.slice(SHOWN);
+    var running = [], timer = null;
 
-    function expand(e) {
-      if (e) e.preventDefault();
-      if (!list.classList.contains('is-collapsed')) return;
-      btn.setAttribute('aria-expanded', 'true');
-      var h0 = list.offsetHeight;
-      list.classList.remove('is-collapsed');
-      var finished = false;
-      var done = function () {
-        if (finished) return;
-        finished = true;
-        wrap.remove();
-        var first = extra[0] && extra[0].querySelector('.rh26-faq-question');
-        if (first) first.focus({ preventScroll: true });
-      };
-      if (still) return done();
-      var h1 = list.offsetHeight;
-      list.style.overflow = 'hidden';
-      list.animate([{ height: h0 + 'px' }, { height: h1 + 'px' }], { duration: MS + 120, easing: EASE })
-        .onfinish = function () { list.style.overflow = ''; };
-      extra.forEach(function (item, k) {
-        item.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
-          { duration: MS, easing: EASE, delay: Math.min(k, 8) * 30, fill: 'backwards' });
-      });
-      // The button fades while its row closes up, so the section shrinks back smoothly instead of jumping
-      wrap.style.overflow = 'hidden';
-      wrap.animate([
-        { opacity: 1, height: wrap.offsetHeight + 'px', marginTop: getComputedStyle(wrap).marginTop },
-        { opacity: 0, height: '0px', marginTop: '0px' }
-      ], { duration: MS, easing: EASE, fill: 'forwards' }).onfinish = done;
-      setTimeout(done, MS + 200); // in case the animation never finishes (e.g. a background tab)
+    // The page script wraps button text in .rh26-btn-label for the hover blur, so write into that when present
+    function setLabel(text) { (btn.querySelector('.rh26-btn-label') || btn).textContent = text; }
+    function settle() {
+      clearTimeout(timer);
+      running.forEach(function (a) { a.onfinish = null; a.cancel(); });
+      running = [];
+      list.style.overflow = '';
     }
-    btn.addEventListener('click', expand);
-    btn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') expand(e); });
+
+    function toggle(e) {
+      if (e) e.preventDefault();
+      var opening = list.classList.contains('is-collapsed');
+      settle();
+      // Heights of both states, measured with nothing animating
+      var h0, h1;
+      if (opening) { h0 = list.offsetHeight; list.classList.remove('is-collapsed'); h1 = list.offsetHeight; }
+      else { h1 = list.offsetHeight; list.classList.add('is-collapsed'); h0 = list.offsetHeight; list.classList.remove('is-collapsed'); }
+      btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+      setLabel(opening ? 'Show Less' : 'Show More');
+
+      var finish = function () {
+        // The list is done; late fades of the last questions may still run, so only the clip and timer are cleared
+        clearTimeout(timer);
+        list.style.overflow = '';
+        if (!opening) {
+          list.classList.add('is-collapsed');
+          // Keep the button in view after the list has closed above it
+          var r = btn.getBoundingClientRect();
+          if (r.top < 0 || r.bottom > innerHeight) btn.scrollIntoView({ block: 'center', behavior: still ? 'auto' : 'smooth' });
+        }
+      };
+      if (still) return finish();
+
+      list.style.overflow = 'hidden';
+      running.push(list.animate([{ height: (opening ? h0 : h1) + 'px' }, { height: (opening ? h1 : h0) + 'px' }],
+        { duration: MS + 120, easing: EASE }));
+      extra.forEach(function (item, k) {
+        running.push(opening
+          ? item.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+              { duration: MS, easing: EASE, delay: Math.min(k, 8) * 30, fill: 'backwards' })
+          : item.animate([{ opacity: 1 }, { opacity: 0 }], { duration: MS * 0.5, easing: 'ease-out', fill: 'forwards' }));
+      });
+      running[0].onfinish = finish;
+      timer = setTimeout(finish, MS + 320); // in case the animation never finishes (e.g. a background tab)
+    }
+    btn.addEventListener('click', toggle);
+    btn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') toggle(e); });
   }
 
   function boot() {
