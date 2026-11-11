@@ -1,0 +1,123 @@
+<style>
+[data-rh26-component="FAQs"] .rh26-faq-item { overflow: hidden; }
+[data-rh26-component="FAQs"] .rh26-faq-question { cursor: pointer; }
+[data-rh26-component="FAQs"] .rh26-faq-plus { transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
+[data-rh26-component="FAQs"] .rh26-faq-item.is-open .rh26-faq-plus { transform: rotate(45deg); }
+/* Show More: the first 6 questions show; the rest wait behind the button (all show if scripts don't run) */
+[data-rh26-component="FAQs"] .rh26-faq-list.is-collapsed > .rh26-faq-item:nth-child(n+7) { display: none; }
+[data-rh26-component="FAQs"] .rh26-faq-list.is-collapsed > .rh26-faq-item:nth-child(6) { border-bottom-color: transparent; }
+[data-rh26-component="FAQs"] .rh26-faq-more:not(.is-ready) { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-rh26-component="FAQs"] .rh26-faq-plus { transition: none; }
+}
+</style>
+<script>
+(function () {
+  var EASE = 'cubic-bezier(.22, 1, .36, 1)', MS = 480, SHOWN = 6;
+  var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setup(item) {
+    if (item.getAttribute('data-rh26-ready')) return;
+    item.setAttribute('data-rh26-ready', 'true');
+    var summary = item.querySelector('.rh26-faq-question');
+    var answer = item.querySelector('.rh26-faq-answer');
+    if (!summary || !answer) return;
+    var anim = null, fade = null;
+    if (item.open) item.classList.add('is-open');
+    // The answer rests at its own (dimmed) opacity; the fade ends there so the text never flashes darker
+    var restOpacity = parseFloat(getComputedStyle(answer).opacity);
+
+    // Height the item has when only the question shows (keeps borders and padding)
+    function closedHeight() {
+      var cs = getComputedStyle(item);
+      return summary.offsetHeight + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) +
+        parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+    }
+    // Stop whatever is running, keeping the values it had reached so a new animation starts from there
+    function stop() {
+      var state = { height: item.offsetHeight, opacity: parseFloat(getComputedStyle(answer).opacity) };
+      if (anim) { anim.onfinish = null; anim.cancel(); anim = null; }
+      if (fade) { fade.cancel(); fade = null; }
+      return state;
+    }
+
+    summary.addEventListener('click', function (e) {
+      e.preventDefault();
+      var opening = !item.classList.contains('is-open');
+      if (still) { stop(); item.open = opening; item.classList.toggle('is-open', opening); return; }
+      var from = stop();
+      var toH;
+      if (opening) {
+        item.classList.add('is-open');
+        item.open = true;
+        toH = item.offsetHeight; // measured with no animation running, so it is the real open height
+        fade = answer.animate([{ opacity: Math.min(from.opacity, restOpacity), transform: 'translateY(-6px)' }, { opacity: restOpacity, transform: 'none' }], { duration: MS, easing: EASE });
+      } else {
+        item.classList.remove('is-open');
+        toH = closedHeight();
+        fade = answer.animate([{ opacity: from.opacity }, { opacity: 0 }], { duration: MS * 0.5, easing: 'ease-out', fill: 'forwards' });
+      }
+      anim = item.animate([{ height: from.height + 'px' }, { height: toH + 'px' }], { duration: MS, easing: EASE });
+      anim.onfinish = function () {
+        anim = null;
+        if (!opening) item.open = false;
+        if (fade) { fade.cancel(); fade = null; }
+      };
+    });
+  }
+
+  // Show More: reveals the remaining questions; the list grows open while they fade in one after another,
+  // then the button fades away and focus moves to the first new question
+  function setupMore(root) {
+    var list = root.querySelector('.rh26-faq-list');
+    var wrap = root.querySelector('.rh26-faq-more');
+    var btn = wrap && wrap.querySelector('[data-rh26-faq-more]');
+    if (!list || !wrap || !btn || wrap.classList.contains('is-ready')) return;
+    var items = Array.prototype.slice.call(list.querySelectorAll(':scope > .rh26-faq-item'));
+    if (items.length <= SHOWN) { wrap.remove(); return; }
+    if (!list.id) list.id = 'rh26-faq-list';
+    list.classList.add('is-collapsed');
+    wrap.classList.add('is-ready');
+    btn.setAttribute('aria-controls', list.id);
+    if (btn.tagName !== 'BUTTON') { btn.setAttribute('role', 'button'); btn.setAttribute('tabindex', '0'); }
+    var extra = items.slice(SHOWN);
+
+    function expand(e) {
+      if (e) e.preventDefault();
+      if (!list.classList.contains('is-collapsed')) return;
+      btn.setAttribute('aria-expanded', 'true');
+      var h0 = list.offsetHeight;
+      list.classList.remove('is-collapsed');
+      var done = function () {
+        wrap.remove();
+        var first = extra[0] && extra[0].querySelector('.rh26-faq-question');
+        if (first) first.focus({ preventScroll: true });
+      };
+      if (still) return done();
+      var h1 = list.offsetHeight;
+      list.style.overflow = 'hidden';
+      list.animate([{ height: h0 + 'px' }, { height: h1 + 'px' }], { duration: MS + 120, easing: EASE })
+        .onfinish = function () { list.style.overflow = ''; };
+      extra.forEach(function (item, k) {
+        item.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+          { duration: MS, easing: EASE, delay: Math.min(k, 8) * 30, fill: 'backwards' });
+      });
+      // The button fades while its row closes up, so the section shrinks back smoothly instead of jumping
+      wrap.style.overflow = 'hidden';
+      wrap.animate([
+        { opacity: 1, height: wrap.offsetHeight + 'px', marginTop: getComputedStyle(wrap).marginTop },
+        { opacity: 0, height: '0px', marginTop: '0px' }
+      ], { duration: MS, easing: EASE, fill: 'forwards' }).onfinish = done;
+    }
+    btn.addEventListener('click', expand);
+    btn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') expand(e); });
+  }
+
+  function boot() {
+    document.querySelectorAll('[data-rh26-component="FAQs"] .rh26-faq-item').forEach(setup);
+    document.querySelectorAll('[data-rh26-component="FAQs"]').forEach(setupMore);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
