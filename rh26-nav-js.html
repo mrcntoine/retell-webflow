@@ -1,6 +1,6 @@
 <style>
 /* [Retell] Header to sticky pill (desktop), as in retell-landing-sticky. Nothing resizes and nothing pops in:
-   the frosted sheet is always there. At the top of the page it spans the full width, square, in the
+   the frosted sheet is always there. At the top of the page it spans the page frame, square, in the
    header strip (white on the white page, so it reads as the flat header); once scrolled it slides and
    narrows into the pill with transforms only while its corners round off, and the shadow fades in.
    The bar's contents drop 8px so they sit centred in the pill, aligned with the page content. */
@@ -76,7 +76,10 @@
         padX = SHEET_PAD;
         padTop = top + shift - SHEET_INSET;
         padBottom = SHEET_PAD * 2 - padTop; /* the pill keeps one height (content + 16px above and below) */
-        bg.style.setProperty('--rh26-sheet-scale', (document.documentElement.clientWidth / (box.width + padX * 2)).toFixed(4));
+        /* At the top the strip spans the page frame (the content plus the header's side padding, so at
+           most 1600px), not the whole window, like the 1512px frame in the prototype */
+        var frame = box.width + parseFloat(getComputedStyle(nav).paddingLeft) + parseFloat(getComputedStyle(nav).paddingRight);
+        bg.style.setProperty('--rh26-sheet-scale', (frame / (box.width + padX * 2)).toFixed(4));
       } else {
         padX = padTop = padBottom = top - SHEET_INSET;
       }
