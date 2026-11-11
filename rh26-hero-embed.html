@@ -37,32 +37,40 @@
 [data-rh26-hero] .rh26-panel-submit[disabled]{opacity:.6;cursor:default;pointer-events:none}
 
 /* Sticky call: follows the hero slideshow once the hero is scrolled away */
-.rh26-sticky{--rh26-ease:cubic-bezier(.32,.72,0,1);position:fixed;right:20px;bottom:20px;z-index:900;width:88px;height:88px;opacity:0;visibility:hidden;translate:0 24px;scale:.88;transform-origin:100% 100%;transition:opacity .45s ease,translate .7s var(--rh26-ease),scale .7s var(--rh26-ease),visibility 0s linear .7s}
-.rh26-sticky.is-shown{opacity:1;visibility:visible;translate:none;scale:1;transition:opacity .45s ease,translate .7s var(--rh26-ease),scale .7s var(--rh26-ease),visibility 0s}
-.rh26-sticky-ring{position:absolute;right:-8px;bottom:-8px;width:104px;height:104px;rotate:-90deg;overflow:visible;pointer-events:none;transition:opacity .35s ease .25s,scale .6s var(--rh26-ease) .2s}
+.rh26-sticky{--rh26-ease:cubic-bezier(.22,1,.36,1);position:fixed;right:20px;bottom:20px;z-index:900;width:88px;height:88px;opacity:0;visibility:hidden;translate:0 24px;scale:.88;transform-origin:100% 100%;transition:opacity .5s ease,translate .8s var(--rh26-ease),scale .8s var(--rh26-ease),visibility 0s linear .8s}
+.rh26-sticky.is-shown{opacity:1;visibility:visible;translate:none;scale:1;transition:opacity .5s ease,translate .8s var(--rh26-ease),scale .8s var(--rh26-ease),visibility 0s}
+.rh26-sticky-ring{position:absolute;right:-8px;bottom:-8px;width:104px;height:104px;rotate:-90deg;overflow:visible;pointer-events:none;transition:opacity .5s ease .3s,scale .8s var(--rh26-ease) .25s}
 .rh26-sticky-ring circle{fill:none;stroke-width:1.5}
 .rh26-sticky-ring .rh26-sticky-track{stroke:rgba(0,0,0,.08)}
-.rh26-sticky-ring .rh26-sticky-arc{stroke:#000;stroke-linecap:round}
-.rh26-sticky-pill{position:absolute;right:0;bottom:0;box-sizing:border-box;width:88px;height:88px;margin:0;padding:0;border:2px solid #fff;border-radius:88px;overflow:hidden;background:#3a3a3a;color:#fff;font:inherit;text-align:left;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12),0 34px 40px rgba(0,0,0,.1);transition:width .65s var(--rh26-ease) .1s,scale .3s var(--rh26-ease);-webkit-tap-highlight-color:transparent}
+.rh26-sticky-ring .rh26-sticky-arc{stroke:#000;stroke-linecap:round;transition:opacity .3s ease}
+.rh26-sticky-ring .rh26-sticky-arc.is-out{opacity:0}
+.rh26-sticky-pill{position:absolute;right:0;bottom:0;box-sizing:border-box;width:88px;height:88px;margin:0;padding:0;border:2px solid #fff;border-radius:88px;overflow:hidden;background:#3a3a3a;color:#fff;font:inherit;text-align:left;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12),0 34px 40px rgba(0,0,0,.1);transition:width .75s var(--rh26-ease) .12s,scale .3s var(--rh26-ease);-webkit-tap-highlight-color:transparent}
 .rh26-sticky-pill:active{scale:.97}
 .rh26-sticky-pill:focus-visible{outline:2px solid #000;outline-offset:4px}
-.rh26-sticky-face{position:absolute;right:0;top:0;width:84px;height:84px;border-radius:50%;object-fit:cover;transition:opacity .4s ease .2s,scale .6s var(--rh26-ease) .15s,filter .4s ease .2s}
-.rh26-sticky-badge{position:absolute;right:26px;top:48px;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#fff;transition:opacity .35s ease .25s,scale .6s var(--rh26-ease) .2s}
+/* Layers that change with the agent: the new picture fades in over the old one, which is then removed */
+.rh26-sticky-faces{position:absolute;right:0;top:0;width:84px;height:84px;border-radius:50%;overflow:hidden;transition:opacity .55s ease .25s,scale .9s var(--rh26-ease) .2s,filter .55s ease .25s}
+.rh26-sticky-face,.rh26-sticky-orb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;scale:1.08;filter:blur(4px);transition:opacity .8s ease,scale 1.1s var(--rh26-ease),filter .8s ease}
+.rh26-sticky-face.is-in,.rh26-sticky-orb-img.is-in{opacity:1;scale:1;filter:blur(0)}
+.rh26-sticky-badge{position:absolute;right:26px;top:48px;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#fff;transition:opacity .45s ease .3s,scale .8s var(--rh26-ease) .25s}
 .rh26-sticky-badge svg,.rh26-sticky-cta svg{width:16px;height:16px;fill:#000;flex:none}
-.rh26-sticky-bg{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(52px);opacity:0;scale:1.15;transition:opacity .5s ease .05s,scale .9s var(--rh26-ease)}
+.rh26-sticky-bg{position:absolute;inset:-60px;filter:blur(52px);opacity:0;scale:1.15;transition:opacity .55s ease .05s,scale 1.1s var(--rh26-ease)}
+.rh26-sticky-bg-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .9s ease}
+.rh26-sticky-bg-img.is-in{opacity:1}
 .rh26-sticky-bg::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.18)}
-.rh26-sticky-body{position:absolute;left:0;top:0;width:438px;height:84px;opacity:0;translate:12px 0;filter:blur(4px);transition:opacity .2s ease,translate .3s var(--rh26-ease),filter .2s ease}
+.rh26-sticky-body{position:absolute;left:0;top:0;width:438px;height:84px;opacity:0;translate:16px 0;filter:blur(4px);transition:opacity .25s ease,translate .4s var(--rh26-ease),filter .25s ease}
 .rh26-sticky-orb{position:absolute;left:14px;top:16px;width:52px;height:52px;border-radius:50%;background:#fff}
-.rh26-sticky-orb img{position:absolute;left:6px;top:6px;width:40px;height:40px;border-radius:50%;object-fit:cover}
+.rh26-sticky-orbs{position:absolute;left:6px;top:6px;width:40px;height:40px;border-radius:50%;overflow:hidden}
 .rh26-sticky-title{position:absolute;left:78px;top:15px;width:213px;font-size:14px;line-height:19px;font-weight:500;letter-spacing:-.14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rh26-sticky-desc{position:absolute;left:78px;top:38px;width:213px;font-size:14px;line-height:16px;letter-spacing:-.14px;opacity:.6}
+.rh26-sticky-title,.rh26-sticky-desc{transition:opacity .35s ease,translate .5s var(--rh26-ease),filter .35s ease}
+.rh26-sticky-body.is-swap .rh26-sticky-title,.rh26-sticky-body.is-swap .rh26-sticky-desc{opacity:0;translate:0 6px;filter:blur(3px)}
 .rh26-sticky-cta{position:absolute;left:307px;top:22px;display:flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:48px;background:#fff;color:#000;font-size:14px;letter-spacing:-.14px;white-space:nowrap}
-.rh26-sticky.is-open .rh26-sticky-pill{width:442px;transition:width .7s var(--rh26-ease),scale .3s var(--rh26-ease)}
-.rh26-sticky.is-open .rh26-sticky-ring{opacity:0;scale:.92;transition:opacity .2s ease,scale .4s var(--rh26-ease)}
-.rh26-sticky.is-open .rh26-sticky-face{opacity:0;scale:1.08;filter:blur(6px);transition:opacity .35s ease,scale .6s var(--rh26-ease),filter .35s ease}
-.rh26-sticky.is-open .rh26-sticky-badge{opacity:0;scale:.8;transition:opacity .2s ease,scale .4s var(--rh26-ease)}
-.rh26-sticky.is-open .rh26-sticky-bg{opacity:1;scale:1;transition:opacity .5s ease,scale .9s var(--rh26-ease)}
-.rh26-sticky.is-open .rh26-sticky-body{opacity:1;translate:none;filter:blur(0);transition:opacity .4s ease .22s,translate .6s var(--rh26-ease) .18s,filter .4s ease .22s}
+.rh26-sticky.is-open .rh26-sticky-pill{width:442px;transition:width .8s var(--rh26-ease),scale .3s var(--rh26-ease)}
+.rh26-sticky.is-open .rh26-sticky-ring{opacity:0;scale:.94;transition:opacity .25s ease,scale .5s var(--rh26-ease)}
+.rh26-sticky.is-open .rh26-sticky-faces{opacity:0;scale:1.06;filter:blur(8px);transition:opacity .45s ease,scale .8s var(--rh26-ease),filter .45s ease}
+.rh26-sticky.is-open .rh26-sticky-badge{opacity:0;scale:.85;transition:opacity .25s ease,scale .5s var(--rh26-ease)}
+.rh26-sticky.is-open .rh26-sticky-bg{opacity:1;scale:1;transition:opacity .6s ease,scale 1.1s var(--rh26-ease)}
+.rh26-sticky.is-open .rh26-sticky-body{opacity:1;translate:none;filter:blur(0);transition:opacity .5s ease .25s,translate .8s var(--rh26-ease) .2s,filter .5s ease .25s}
 @media (max-width:767px){.rh26-sticky{right:16px;bottom:16px}}
 @media (prefers-reduced-motion: reduce){[data-rh26-hero] *,.rh26-sticky,.rh26-sticky *{transition-duration:.01s!important;transition-delay:0s!important}}
 </style>
@@ -171,10 +179,10 @@
     '<circle class="rh26-sticky-arc" cx="52" cy="52" r="' + SR + '" stroke-dasharray="' + SLEN + '" stroke-dashoffset="' + SLEN + '"/></svg>' +
     '<button type="button" class="rh26-sticky-pill" aria-haspopup="dialog">' +
       '<span class="rh26-sticky-bg"></span>' +
-      '<img class="rh26-sticky-face" alt="" decoding="async">' +
+      '<span class="rh26-sticky-faces"></span>' +
       '<span class="rh26-sticky-badge">' + PHONE + '</span>' +
       '<span class="rh26-sticky-body" aria-hidden="true">' +
-        '<span class="rh26-sticky-orb"><img alt="" decoding="async"></span>' +
+        '<span class="rh26-sticky-orb"><span class="rh26-sticky-orbs"></span></span>' +
         '<span class="rh26-sticky-title"></span>' +
         '<span class="rh26-sticky-desc"></span>' +
         '<span class="rh26-sticky-cta">' + PHONE + 'Get a call</span>' +
@@ -183,23 +191,55 @@
   document.body.appendChild(sticky);
   var sPill = sticky.querySelector('.rh26-sticky-pill');
   var sArc = sticky.querySelector('.rh26-sticky-arc');
-  var sFace = sticky.querySelector('.rh26-sticky-face');
+  var sFaces = sticky.querySelector('.rh26-sticky-faces');
   var sBg = sticky.querySelector('.rh26-sticky-bg');
-  var sOrb = sticky.querySelector('.rh26-sticky-orb img');
+  var sOrbs = sticky.querySelector('.rh26-sticky-orbs');
+  var sBody = sticky.querySelector('.rh26-sticky-body');
   var sTitle = sticky.querySelector('.rh26-sticky-title');
   var sDesc = sticky.querySelector('.rh26-sticky-desc');
-  var heroInView = true;
+  var heroInView = true, arcOutUntil = 0;
 
-  function updateSticky() {
+  // A new layer (photo, blurred backdrop or orb) loads, fades in over the current one, then the old one goes
+  var preload = function (url) {
+    var im = new Image(); im.src = url;
+    return (im.decode ? im.decode() : Promise.resolve()).catch(function () {});
+  };
+  function crossfade(box, url, make, instant) {
+    if (!url || box._rh26Url === url) return;
+    box._rh26Url = url;
+    var olds = Array.prototype.slice.call(box.children);
+    var el = make(url);
+    preload(url).then(function () {
+      if (box._rh26Url !== url) return;
+      box.appendChild(el);
+      var done = function () { olds.forEach(function (o) { o.remove(); }); };
+      if (instant || reduceMotion) { el.classList.add('is-in'); return done(); }
+      void el.offsetWidth;
+      el.classList.add('is-in');
+      setTimeout(done, 1100);
+    });
+  }
+  var makeImg = function (cls) {
+    return function (url) { var im = document.createElement('img'); im.className = cls; im.alt = ''; im.src = url; return im; };
+  };
+  var makeBg = function (url) {
+    var s = document.createElement('span'); s.className = 'rh26-sticky-bg-img'; s.style.backgroundImage = 'url("' + url + '")'; return s;
+  };
+  var textTimer = null;
+  function updateSticky(instant) {
     var agent = AGENTS[current], v = videos[current];
     if (!agent || !v) return;
     var thumb = v.getAttribute('data-rh26-thumb') || v.getAttribute('poster') || '';
-    if (thumb) { sFace.src = thumb; sBg.style.backgroundImage = 'url("' + thumb + '")'; }
-    var orb = v.getAttribute('data-rh26-orb');
-    if (orb) sOrb.src = orb;
-    sTitle.textContent = agent.title;
-    sDesc.textContent = agent.desc;
+    crossfade(sFaces, thumb, makeImg('rh26-sticky-face'), instant);
+    crossfade(sBg, thumb, makeBg, instant);
+    crossfade(sOrbs, v.getAttribute('data-rh26-orb'), makeImg('rh26-sticky-orb-img'), instant);
     sPill.setAttribute('aria-label', 'Get a call from ' + agent.name + ': ' + agent.title);
+    var write = function () { sTitle.textContent = agent.title; sDesc.textContent = agent.desc; sBody.classList.remove('is-swap'); };
+    clearTimeout(textTimer);
+    // The text only animates when it is on screen (open pill); otherwise it just changes
+    if (instant || reduceMotion || !sticky.classList.contains('is-open')) return write();
+    sBody.classList.add('is-swap');
+    textTimer = setTimeout(write, 300);
   }
   function showSticky() { sticky.classList.toggle('is-shown', !heroInView && !calling); }
   // Hovering the sticky call holds the slideshow on the current agent; leaving picks it up where it stopped
@@ -217,11 +257,19 @@
     clearTimeout(timer);
     if (!reduceMotion && !calling && !document.hidden) timer = setTimeout(next, Math.max(0, slideMs - elapsed));
   }
-  function openSticky() { sticky.classList.add('is-open'); hold(); }
-  function closeSticky() { sticky.classList.remove('is-open'); release(); }
-  var canHover = matchMedia('(hover: hover) and (pointer: fine)');
-  sticky.addEventListener('mouseenter', function () { if (canHover.matches) openSticky(); });
-  sticky.addEventListener('mouseleave', closeSticky);
+  function openSticky() { clearTimeout(hoverTimer); sticky.classList.add('is-open'); hold(); }
+  function closeSticky() { clearTimeout(hoverTimer); sticky.classList.remove('is-open'); release(); }
+  // A short hover intent keeps the pill from flickering when the pointer only brushes its edge
+  var canHover = matchMedia('(hover: hover) and (pointer: fine)'), hoverTimer = null;
+  sticky.addEventListener('mouseenter', function () {
+    if (!canHover.matches) return;
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(openSticky, 60);
+  });
+  sticky.addEventListener('mouseleave', function () {
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(closeSticky, 120);
+  });
   sPill.addEventListener('focus', function () { if (sPill.matches(':focus-visible')) openSticky(); });
   sPill.addEventListener('blur', closeSticky);
   // Click: back to the top of the page, then the hero's call panel opens for the current agent
@@ -350,12 +398,17 @@
     avatars.forEach(function (a, k) { a.classList.toggle('is-active', k === i); a.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
     if (avatars[i]) avatars[i].appendChild(ring);
     arc.style.strokeDashoffset = LEN;
-    sArc.style.strokeDashoffset = SLEN;
+    // The sticky ring fades out full, then starts again empty, instead of snapping back
+    if (!instant && !reduceMotion) {
+      arcOutUntil = performance.now() + 300;
+      sArc.classList.add('is-out');
+      setTimeout(function () { sArc.classList.remove('is-out'); }, 300);
+    }
     var orb = v.getAttribute('data-rh26-orb');
     if (orb) Array.prototype.forEach.call(orbs, function (img) { swapOrb(img, orb, instant); });
     applyAgent();
     swapBar(instant);
-    updateSticky();
+    updateSticky(instant);
 
     // The conversation: the caller speaks, then the agent answers
     [bubble, reply].forEach(function (el) { if (el) el.classList.add('rh26-out'); });
@@ -437,7 +490,7 @@
     if (videos[current] && !reduceMotion) {
       var p = startedAt && !calling ? Math.min(1, ((held ? heldAt : performance.now()) - startedAt) / slideMs) : 0;
       arc.style.strokeDashoffset = LEN * (1 - p);
-      sArc.style.strokeDashoffset = SLEN * (1 - p);
+      sArc.style.strokeDashoffset = performance.now() < arcOutUntil ? 0 : SLEN * (1 - p);
     }
     requestAnimationFrame(tick);
   })();
