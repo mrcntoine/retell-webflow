@@ -88,7 +88,10 @@
       btn.setAttribute('aria-expanded', 'true');
       var h0 = list.offsetHeight;
       list.classList.remove('is-collapsed');
+      var finished = false;
       var done = function () {
+        if (finished) return;
+        finished = true;
         wrap.remove();
         var first = extra[0] && extra[0].querySelector('.rh26-faq-question');
         if (first) first.focus({ preventScroll: true });
@@ -108,6 +111,7 @@
         { opacity: 1, height: wrap.offsetHeight + 'px', marginTop: getComputedStyle(wrap).marginTop },
         { opacity: 0, height: '0px', marginTop: '0px' }
       ], { duration: MS, easing: EASE, fill: 'forwards' }).onfinish = done;
+      setTimeout(done, MS + 200); // in case the animation never finishes (e.g. a background tab)
     }
     btn.addEventListener('click', expand);
     btn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') expand(e); });
