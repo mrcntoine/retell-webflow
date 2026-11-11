@@ -37,6 +37,10 @@
 .rh26-stage-part-detail { margin-left: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: rgba(0, 0, 0, .3); }
 /* architecture toggle: the pressed side is the white pill */
 [data-rh26-component="Conversational Dynamics"] .rh26-arch-button[aria-pressed="true"] { opacity: 1; background-color: var(--_base-colors---white); box-shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 0 0 .5px rgba(0, 0, 0, .06); cursor: default; }
+/* The page head code styles the groups by position; the toggle above them shifts the count by one */
+.rh26-page .rh26-agent-tabs > div.rh26-arch-toggle { padding-bottom: 4px; border-bottom: 0; margin-bottom: 20px; }
+.rh26-page .rh26-agent-tabs > div:nth-child(3) { padding-bottom: 28px; border-bottom: 1px solid #e5e4e1; margin-bottom: 15px; }
+.rh26-page .rh26-agent-tabs > div:nth-child(4) { padding-bottom: 0; border-bottom: 0; margin-bottom: 0; }
 /* models: the playing one at full strength */
 [data-rh26-component="Conversational Dynamics"] .rh26-scene-item[aria-current="step"] { opacity: 1; cursor: default; }
 [data-rh26-component="Conversational Dynamics"] .rh26-scene-bar { transform: scaleY(0); }
