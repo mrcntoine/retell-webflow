@@ -1,0 +1,276 @@
+<style>
+/* [Retell] Scrolled bar (desktop): the bar drops 8px and the frosted sheet becomes a pill that runs
+   16px past the content on every side, so the logo and buttons stay aligned with the page content */
+@media (min-width: 992px) {
+  #rh26-native-nav .navbar_container-new { transition: translate .35s var(--nav-ease-io-new); }
+  #rh26-native-nav.is-scrolled .navbar_container-new { translate: 0 8px; }
+  #rh26-native-nav .navbar_menu-bg-new { transition: background-color .3s ease, box-shadow .3s ease, border-radius .35s var(--nav-ease-io-new), left .35s var(--nav-ease-io-new), top .35s var(--nav-ease-io-new), width .35s var(--nav-ease-io-new), height .35s var(--nav-ease-io-new); }
+  #rh26-native-nav.is-scrolled .navbar_menu-bg-new:not(.is-open) { border-radius: 36px; background-color: color-mix(in srgb, var(--_base-colors---white) 90%, transparent); -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); box-shadow: 0 4px 6px 0 rgba(0, 0, 0, .09); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #rh26-native-nav .navbar_container-new { transition: none; }
+}
+</style>
+<script>
+(function () {
+  function init() {
+    var nav = document.querySelector('.navbar_component-new');
+    var container = document.querySelector('.navbar_container-new');
+    var menu = document.querySelector('.navbar_menu-new');
+    var bg = document.querySelector('.navbar_menu-bg-new');
+    if (!nav || !container || !menu || !bg) return;
+    var mqDesktop = window.matchMedia('(min-width: 992px)');
+    var dropdowns = Array.prototype.slice.call(menu.querySelectorAll('.navbar_dropdown-new'));
+    var links = Array.prototype.slice.call(menu.querySelectorAll('.rh26-native-link'));
+    var current = null;
+    var closeTimer = null;
+    var shrinkTimer = null;
+    var PANEL_FADE_MS = 150; /* matches the panel fade-out in the CSS embed */
+    var SHEET_INSET = 8;  /* px between the top of the viewport and the frosted bar */
+    var SCROLL_SHIFT = 8; /* px the bar drops once the page is scrolled (desktop), matching the CSS above */
+    var SCROLL_AT = 8;    /* px of scroll before the bar switches to its scrolled look */
+    var PANEL_PAD = 8;    /* px of tolerance around the open panel before the pointer counts as "outside" */
+    var TOGGLE_PAD = 4;   /* same, around the toggle */
+    var lastX = -1, lastY = -1;
+
+    /* Page dim behind an open dropdown */
+    var overlay = document.createElement('div');
+    overlay.className = 'rh26-nav-overlay';
+    overlay.setAttribute('aria-hidden', 'true');
+    /* sits next to the bar (inside the header's stacking context) so the bar and sheet stay above it */
+    nav.parentNode.insertBefore(overlay, nav);
+
+    function panelOf(d) { return d.querySelector('.navbar_dropdown-list-new'); }
+    function toggleOf(d) { return d.querySelector('.rh26-native-dropdown-toggle') || d; }
+    /* The sheet sits behind the bar: the content width (up to its max width) plus the same padding
+       all round. The padding is the gap between the top of the viewport and the bar, less the inset,
+       so it is 8px at the top of the page and 16px once scrolled (the bar drops 8px, the sheet stays
+       8px from the top). With a panel open it only grows down to the panel's bottom and turns white. */
+    function sizeBg(panel) {
+      var box = container.getBoundingClientRect();
+      var shift = mqDesktop.matches && nav.classList.contains('is-scrolled') ? SCROLL_SHIFT : 0;
+      var pad = nav.getBoundingClientRect().top + parseFloat(getComputedStyle(nav).paddingTop) + shift - SHEET_INSET;
+      bg.style.left = -pad + 'px';
+      bg.style.top = -pad + 'px';
+      bg.style.width = (box.width + pad * 2) + 'px';
+      bg.style.height = (panel ? panel.offsetTop + panel.offsetHeight + pad : box.height + pad * 2) + 'px';
+      watchClip(SHEET_MS + 100);
+    }
+    /* Panel text never shows outside the sheet: while the sheet grows or shrinks, every panel is clipped
+       at the sheet's current bottom edge, frame by frame */
+    var SHEET_MS = 350; /* matches the sheet height transition in the CSS embed */
+    var clipUntil = 0, clipRaf = null;
+    function clipPanels() {
+      var edge = bg.getBoundingClientRect().bottom;
+      dropdowns.forEach(function (d) {
+        var p = panelOf(d), r = p.getBoundingClientRect();
+        var cut = Math.min(r.height, Math.max(0, r.bottom - edge));
+        p.style.clipPath = cut > 0 ? 'inset(0 0 ' + cut + 'px 0)' : '';
+      });
+    }
+    function watchClip(ms) {
+      clipUntil = Math.max(clipUntil, performance.now() + ms);
+      if (clipRaf) return;
+      (function loop() {
+        clipPanels();
+        clipRaf = performance.now() < clipUntil ? requestAnimationFrame(loop) : null;
+      })();
+    }
+    /* Sizing that is not a dropdown opening (page load, fonts, resize) applies instantly */
+    function snapBg(panel) {
+      bg.style.transition = 'none';
+      sizeBg(panel);
+      void bg.offsetWidth;
+      bg.style.transition = '';
+    }
+    function setSheet(on) {
+      bg.classList.toggle('is-open', on);
+      nav.classList.toggle('is-sheet', on);
+      overlay.classList.toggle('is-visible', on);
+    }
+    /* Scrolled look: set before the first sizing so a page opened mid-scroll starts in place */
+    var scrolled = window.scrollY > SCROLL_AT;
+    nav.classList.toggle('is-scrolled', scrolled);
+    function checkScroll() {
+      var s = window.scrollY > SCROLL_AT;
+      if (s === scrolled) return;
+      scrolled = s;
+      nav.classList.toggle('is-scrolled', s);
+      sizeBg(current ? panelOf(current) : null);
+    }
+    window.addEventListener('scroll', checkScroll, { passive: true });
+    snapBg(null);
+    bg.classList.add('is-ready');
+    /* Our state machine owns open/close - undo Webflow's native click-toggle w--open state */
+    function stripNative(d) {
+      Array.prototype.slice.call(d.querySelectorAll('.w--open')).forEach(function (el) { el.classList.remove('w--open'); });
+      d.classList.remove('w--open');
+    }
+    /* Wrap button labels so the hover blur pulse hits only the text, like retellai.com */
+    Array.prototype.slice.call(document.querySelectorAll('.navbar_component-new .button-nav-new')).forEach(function (b) {
+      if (!b.querySelector('.button_label-new')) {
+        var s = document.createElement('span');
+        s.className = 'button_label-new';
+        while (b.firstChild) s.appendChild(b.firstChild);
+        b.appendChild(s);
+      }
+    });
+    function open(d) {
+      if (!mqDesktop.matches) return;
+      cancelClose();
+      if (current === d) return;
+      var panel = panelOf(d);
+      if (!current) {
+        /* First open: the sheet grows first, the panel fades in once it has room (is-first delays it in the CSS) */
+        clearTimeout(shrinkTimer);
+        sizeBg(panel);
+        panel.classList.add('is-first', 'is-active');
+        setSheet(true);
+      } else {
+        var prev = panelOf(current);
+        var dir = dropdowns.indexOf(d) > dropdowns.indexOf(current) ? 1 : -1;
+        prev.classList.remove('is-active', 'is-enter-left', 'is-enter-right');
+        prev.classList.add(dir === 1 ? 'is-exit-left' : 'is-exit-right');
+        (function (p) { setTimeout(function () { p.classList.remove('is-exit-left', 'is-exit-right'); }, 180); })(prev);
+        prev.classList.remove('is-first');
+        panel.classList.remove('is-exit-left', 'is-exit-right', 'is-first');
+        panel.classList.add(dir === 1 ? 'is-enter-right' : 'is-enter-left');
+        void panel.offsetWidth;
+        sizeBg(panel);
+        panel.classList.add('is-active');
+        panel.classList.remove('is-enter-right', 'is-enter-left');
+        current.classList.remove('is-open');
+      }
+      d.classList.add('is-open');
+      menu.classList.add('has-open');
+      current = d;
+    }
+    function cancelClose() { clearTimeout(closeTimer); closeTimer = null; }
+    function closeAll() {
+      cancelClose();
+      if (!current) return;
+      var panel = panelOf(current);
+      panel.classList.remove('is-active', 'is-enter-left', 'is-enter-right', 'is-first');
+      setSheet(false);
+      /* The panel fades out first, then the sheet shrinks back to the bar, so no text sits outside it */
+      clearTimeout(shrinkTimer);
+      shrinkTimer = setTimeout(function () { if (!current) sizeBg(null); }, PANEL_FADE_MS);
+      current.classList.remove('is-open');
+      menu.classList.remove('has-open');
+      current = null;
+    }
+    function scheduleClose() {
+      cancelClose();
+      closeTimer = setTimeout(closeAll, 160);
+    }
+    /* ---------- Desktop hover intent (geometry based) ----------
+       The menu stays open while the pointer is over the toggle, the open panel, the corridor
+       between them, or anywhere on the white sheet. Anything else schedules a close. */
+    function inRect(r, x, y, pad) {
+      return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad;
+    }
+    function pointerInside(d, x, y) {
+      /* The sheet runs behind the whole bar, so Pricing and the other menu items sit on it too:
+         over any of them except this dropdown's own toggle, the pointer has left this dropdown */
+      var over = x >= 0 ? document.elementFromPoint(x, y) : null;
+      var item = over && over.closest ? over.closest('.rh26-native-link, .rh26-native-dropdown-toggle') : null;
+      if (item && item !== toggleOf(d)) return false;
+      var t = toggleOf(d).getBoundingClientRect();
+      var p = panelOf(d).getBoundingClientRect();
+      if (inRect(t, x, y, TOGGLE_PAD) || inRect(p, x, y, PANEL_PAD) || inRect(bg.getBoundingClientRect(), x, y, 0)) return true;
+      var corridor = {
+        left: Math.min(t.left, p.left),
+        right: Math.max(t.right, p.right),
+        top: Math.min(t.bottom, p.top),
+        bottom: Math.max(t.bottom, p.top)
+      };
+      return inRect(corridor, x, y, 0);
+    }
+    function onPointerMove(e) {
+      lastX = e.clientX; lastY = e.clientY;
+      if (!current || !mqDesktop.matches) return;
+      if (pointerInside(current, e.clientX, e.clientY)) {
+        cancelClose();
+      } else if (closeTimer === null) {
+        scheduleClose();
+      }
+    }
+    dropdowns.forEach(function (d) {
+      d.addEventListener('mouseenter', function () { open(d); });
+      d.addEventListener('focusin', function () { open(d); });
+      d.addEventListener('focusout', function (e) {
+        /* keyboard users: close when focus leaves; mouse users: only if the pointer is outside too */
+        if (current === d && !d.contains(e.relatedTarget) && !pointerInside(d, lastX, lastY)) scheduleClose();
+      });
+      var tog = d.querySelector('.rh26-native-dropdown-toggle');
+      if (tog) tog.addEventListener('click', function () {
+        if (!mqDesktop.matches) return;
+        setTimeout(function () { stripNative(d); open(d); }, 0);
+      });
+    });
+    document.addEventListener('mousemove', onPointerMove, { passive: true });
+    document.documentElement.addEventListener('mouseleave', function () { if (current) scheduleClose(); });
+    /* Moving onto Pricing (or another plain link) closes the open dropdown straight away */
+    links.forEach(function (l) {
+      l.addEventListener('mouseenter', function () { if (mqDesktop.matches) closeAll(); });
+      l.addEventListener('focusin', function () { if (mqDesktop.matches) closeAll(); });
+    });
+    window.addEventListener('resize', function () { snapBg(current ? panelOf(current) : null); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!current) snapBg(null); });
+
+    /* ---------- Mobile drill-in menu ---------- */
+    var mobileMenu = document.querySelector('.navbar_mobile-menu-new');
+    var burger = document.querySelector('.navbar_mobile-button-new');
+    var subs = [];
+    var resetTimer = null;
+    function resetViews(instant) {
+      if (!mobileMenu) return;
+      if (instant) mobileMenu.classList.add('no-anim');
+      mobileMenu.classList.remove('is-drilled');
+      subs.forEach(function (s) { s.classList.remove('is-active'); });
+      if (instant) { void mobileMenu.offsetWidth; mobileMenu.classList.remove('no-anim'); }
+    }
+    function setMobile(openState) {
+      if (!mobileMenu) return;
+      clearTimeout(resetTimer);
+      if (openState) resetViews(true);
+      mobileMenu.classList.toggle('is-open', openState);
+      nav.classList.toggle('is-menu-open', openState);
+      if (burger) {
+        burger.classList.toggle('is-active', openState);
+        burger.setAttribute('aria-expanded', openState ? 'true' : 'false');
+        burger.setAttribute('aria-label', openState ? 'Close menu' : 'Open menu');
+      }
+      document.body.classList.toggle('nav-lock', openState);
+      if (!openState) {
+        resetTimer = setTimeout(function () { resetViews(true); }, 260);
+      }
+    }
+    if (mobileMenu && burger) {
+      var chevR = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
+      var chevL = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>';
+      var drills = Array.prototype.slice.call(mobileMenu.querySelectorAll('.navbar_mobile-row-new.is-drill'));
+      subs = Array.prototype.slice.call(mobileMenu.querySelectorAll('.navbar_mobile-view-new.is-sub'));
+      drills.forEach(function (r) { r.insertAdjacentHTML('beforeend', chevR); });
+      subs.forEach(function (s, i) {
+        var back = s.querySelector('.navbar_mobile-back-new');
+        if (back) back.insertAdjacentHTML('afterbegin', chevL);
+        var src = dropdowns[i] && panelOf(dropdowns[i]).querySelector('.dropdown_content-new');
+        var target = s.querySelector('.navbar_mobile-sub-content-new');
+        if (src && target) target.appendChild(src.cloneNode(true));
+      });
+      burger.addEventListener('click', function (e) { e.preventDefault(); setMobile(!mobileMenu.classList.contains('is-open')); });
+      drills.forEach(function (r, i) {
+        r.addEventListener('click', function (e) { e.preventDefault(); mobileMenu.classList.add('is-drilled'); if (subs[i]) { subs[i].scrollTop = 0; subs[i].classList.add('is-active'); } });
+      });
+      subs.forEach(function (s) {
+        var back = s.querySelector('.navbar_mobile-back-new');
+        if (back) back.addEventListener('click', function (e) { e.preventDefault(); mobileMenu.classList.remove('is-drilled'); s.classList.remove('is-active'); });
+      });
+      mqDesktop.addEventListener('change', function (e) { if (e.matches) { clearTimeout(resetTimer); resetViews(true); setMobile(false); } else { closeAll(); } });
+    }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeAll(); if (mobileMenu && mobileMenu.classList.contains('is-open')) setMobile(false); } });
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); } else { init(); }
+})();
+</script>
