@@ -207,6 +207,7 @@
   // Click: back to the top of the page, then the hero's call panel opens for the current agent
   sPill.addEventListener('click', function () {
     sticky.classList.remove('is-open');
+    clearTimeout(timer); // hold the current agent while the page scrolls up
     trackDemo('Website Demo Sticky Clicked', AGENTS[current]);
     var done = false, start = performance.now();
     var finish = function () { if (done) return; done = true; if (openPanel) openPanel(); };
